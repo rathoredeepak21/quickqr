@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuickQR</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins,sans-serif}
+
+body{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  padding:20px;
+  background:radial-gradient(circle at top,#2a2f4f 0%,#111827 45%,#090d17 100%);
+}
+
+.phone{
+  width:340px;height:640px;
+  border-radius:34px;
+  overflow:hidden;
+  position:relative;
+  border:1px solid rgba(255,255,255,.25);
+  box-shadow:0 28px 60px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.22);
+  background:linear-gradient(160deg,#cbe8ff 0%,#a8d0e6 55%,#93c5e6 100%);
+}
+
+/* screens */
+.screen{
+  position:absolute;
+  width:100%;height:100%;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  gap:14px;
+  padding:30px 22px 20px;
+  transition:0.4s;
+}
+.hidden{transform:translateX(100%)}
+.app-hidden{display:none}
+
+.footer-links{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:14px;
+  display:flex;
+  justify-content:center;
+  gap:14px;
+  padding:0 18px;
+  z-index:10;
+}
+.footer-link{
+  border:1px solid rgba(15,23,42,.12);
+  background:rgba(255,255,255,.78);
+  color:#0f172a;
+  padding:9px 12px;
+  border-radius:999px;
+  font-weight:600;
+  cursor:pointer;
+  box-shadow:0 10px 18px rgba(15,23,42,.10);
+  backdrop-filter:blur(6px);
+}
+.footer-link:hover{background:rgba(255,255,255,.92)}
+
+h3{
+  font-size:1.35rem;
+  color:#0f172a;
+  margin-bottom:2px;
+}
+
+p{
+  color:#334155;
+  font-size:.95rem;
+}
+
+input{
+  width:85%;
+  padding:13px;
+  border-radius:16px;
+  border:1px solid rgba(15,23,42,.12);
+  background:#ffffffeb;
+  color:#0f172a;
+  text-align:center;
+  font-size:.95rem;
+  outline:none;
+  box-shadow:0 8px 18px rgba(15,23,42,.08);
+  transition:.2s ease;
+}
+input:focus{
+  border-color:#7c3aed;
+  box-shadow:0 0 0 4px rgba(124,58,237,.16), 0 10px 22px rgba(15,23,42,.1);
+}
+input::placeholder{color:#6b7280}
+
+.btn{
+  width:85%;
+  padding:13px;
+  border:none;
+  border-radius:16px;
+  background:linear-gradient(45deg,#7c3aed,#6366f1);
+  color:white;
+  font-weight:600;
+  letter-spacing:.2px;
+  cursor:pointer;
+  box-shadow:0 10px 24px rgba(99,102,241,.32);
+  transition:transform .2s ease, box-shadow .2s ease;
+}
+.btn:hover{
+  transform:translateY(-1px);
+  box-shadow:0 14px 26px rgba(99,102,241,.38);
+}
+.btn:active{
+  transform:translateY(0);
+}
+
+.suggest{
+  display:flex;
+  gap:10px;
+  margin-top:2px;
+}
+
+.suggest button{
+  padding:10px;
+  min-width:70px;
+  border:1px solid rgba(15,23,42,.1);
+  border-radius:10px;
+  background:#ffffffbd;
+  color:#0f172a;
+  font-weight:600;
+  cursor:pointer;
+  transition:.2s ease;
+}
+.suggest button:hover{
+  transform:translateY(-1px);
+  background:white;
+}
+
+.settings{
+  position:absolute;
+  top:18px;
+  right:14px;
+  color:#ffffff;
+  cursor:pointer;
+  z-index:20;
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  background:rgba(15,23,42,.24);
+  border:1px solid rgba(255,255,255,.36);
+  box-shadow:0 8px 20px rgba(15,23,42,.24);
+  backdrop-filter:blur(4px);
+}
+
+.panel{
+  position:absolute;
+  bottom:0;
+  width:100%;
+  background:#f8fafc;
+  color:#0f172a;
+  padding:18px 18px 20px;
+  border-radius:22px 22px 0 0;
+  transform:translateY(100%);
+  transition:0.4s;
+  box-shadow:0 -8px 20px rgba(15,23,42,.12);
+  z-index:30;
+}
+.panel.show{transform:translateY(0)}
+
+#panel h4{margin-bottom:12px}
+#panel p{
+  margin:10px 0 8px;
+  font-size:.85rem;
+  font-weight:600;
+  color:#475569;
+}
+#panel button{
+  border:1px solid rgba(15,23,42,.12);
+  background:white;
+  color:#0f172a;
+  padding:8px 10px;
+  border-radius:10px;
+  margin-right:6px;
+  margin-bottom:6px;
+  font-weight:600;
+  cursor:pointer;
+}
+#panel .link-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+}
+#panel .panel-divider{
+  height:1px;
+  background:rgba(15,23,42,.08);
+  margin:12px 0;
+}
+#panel input[type="file"]{
+  width:100%;
+  border:none;
+  background:transparent;
+  padding:6px 0 0;
+  text-align:left;
+  box-shadow:none;
+}
+
+#username{
+  text-transform:capitalize;
+}
+
+#home{
+  justify-content:flex-start;
+  padding-top:72px;
+  padding-bottom:74px;
+}
+
+#qr{
+  padding-bottom:74px;
+}
+
+#setup{
+  padding-bottom:74px;
+}
+.welcome-cloud{
+  width:86%;
+  max-width:280px;
+  background:rgba(255,255,255,.92);
+  border-radius:34px;
+  padding:16px 16px 15px;
+  text-align:center;
+  border:1px solid rgba(255,255,255,.6);
+  box-shadow:0 14px 28px rgba(15,23,42,.14);
+}
+.welcome-text{
+  font-size:1rem;
+  color:#475569;
+}
+.brand-title{
+  margin-top:2px;
+  font-size:2.05rem;
+  line-height:1.05;
+  color:#111827;
+  font-weight:600;
+}
+.brand-title span{
+  color:#7c3aed;
+}
+
+#showName{
+  margin-top:12px;
+}
+#showAmt{
+  font-size:1.08rem;
+  font-weight:600;
+  color:#0f172a;
+  background:rgba(255,255,255,.7);
+  padding:6px 14px;
+  border-radius:999px;
+  border:1px solid rgba(15,23,42,.08);
+}
+#qrTimer{
+  font-size:1rem;
+  font-weight:600;
+  color:#1e293b;
+  background:rgba(255,255,255,.76);
+  padding:6px 12px;
+  border-radius:999px;
+  border:1px solid rgba(15,23,42,.1);
+}
+#qrStatus{
+  min-height:20px;
+  font-weight:600;
+  color:#dc2626;
+}
+
+#qrcode{
+  margin-top:8px;
+  background:white;
+  border-radius:16px;
+  padding:14px;
+  border:1px solid rgba(15,23,42,.08);
+  box-shadow:0 12px 24px rgba(15,23,42,.14);
+}
+#qrcode img{
+  border-radius:8px;
+}
+.upi-apps{
+  width:88%;
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:2px;
+}
+.upi-app{
+  width:46px;
+  height:46px;
+  border-radius:12px;
+  background:rgba(255,255,255,.9);
+  border:1px solid rgba(15,23,42,.08);
+  box-shadow:0 8px 16px rgba(15,23,42,.1);
+  display:grid;
+  place-items:center;
+  padding:6px;
+}
+.upi-app img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+}
+
+/* Info screens (About / Privacy) */
+.screen.content{
+  justify-content:flex-start;
+  align-items:stretch;
+  gap:12px;
+  padding:18px 18px 22px;
+  overflow-y:auto;
+}
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  position:sticky;
+  top:0;
+  padding:10px 0 10px;
+  background:linear-gradient(180deg, rgba(248,250,252,.92), rgba(248,250,252,.72));
+  backdrop-filter:blur(6px);
+  border-bottom:1px solid rgba(15,23,42,.08);
+  z-index:5;
+}
+.topbar h3{
+  margin:0;
+}
+.icon-btn{
+  border:1px solid rgba(15,23,42,.12);
+  background:rgba(255,255,255,.92);
+  color:#0f172a;
+  padding:9px 12px;
+  border-radius:12px;
+  font-weight:600;
+  cursor:pointer;
+  box-shadow:0 10px 18px rgba(15,23,42,.10);
+}
+.card{
+  background:rgba(255,255,255,.9);
+  border:1px solid rgba(15,23,42,.08);
+  border-radius:18px;
+  padding:14px 14px 12px;
+  box-shadow:0 12px 22px rgba(15,23,42,.10);
+}
+.card h4{
+  font-size:1.05rem;
+  color:#0f172a;
+  margin-bottom:6px;
+}
+.muted{
+  color:#475569;
+  font-size:.88rem;
+  line-height:1.55;
+}
+.bullets{
+  margin-top:8px;
+  padding-left:18px;
+  color:#334155;
+  font-size:.92rem;
+  line-height:1.55;
+}
+.bullets li{margin:6px 0}
+
+/* Splash screen */
+#splash{
+  background:linear-gradient(160deg,#a855f7 0%,#6366f1 45%,#1d4ed8 100%);
+  color:white;
+  text-align:center;
+  justify-content:space-between;
+  padding:84px 24px 70px;
+  z-index:40;
+}
+.splash-decor{
+  position:absolute;
+  width:180px;
+  height:180px;
+  border:2px solid rgba(255,255,255,.12);
+  border-radius:50%;
+  pointer-events:none;
+}
+.splash-decor.one{top:-70px;right:-70px}
+.splash-decor.two{bottom:-82px;left:-82px}
+
+.splash-logo{
+  width:106px;
+  height:106px;
+  margin:0 auto 16px;
+  border-radius:28px;
+  border:4px solid rgba(255,255,255,.95);
+  display:grid;
+  place-items:center;
+  font-size:2.2rem;
+  box-shadow:0 10px 24px rgba(0,0,0,.25);
+  background:rgba(255,255,255,.1);
+}
+.splash-title{
+  font-size:3rem;
+  font-weight:600;
+  line-height:1;
+  color:#fff;
+  text-shadow:0 3px 10px rgba(0,0,0,.26);
+}
+.splash-title span{
+  color:#67e8f9;
+}
+.splash-subtitle{
+  margin-top:8px;
+  font-size:1.05rem;
+  color:rgba(255,255,255,.9);
+}
+
+.loader-wrap{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+}
+.loader{
+  width:38px;
+  height:38px;
+  border-radius:50%;
+  border:4px solid rgba(255,255,255,.35);
+  border-top-color:#67e8f9;
+  animation:spin 1s linear infinite;
+}
+.loader-text{
+  color:rgba(255,255,255,.95);
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media (max-width:390px){
+  .phone{width:100%;height:calc(100vh - 40px)}
+}
+</style>
+</head>
+
+<body>
+
+<div class="phone" id="phone">
+
+<div class="settings app-hidden" id="settingsBtn" onclick="toggleSettings()">⚙️</div>
+
+<!-- SPLASH -->
+<div id="splash" class="screen">
+  <div class="splash-decor one"></div>
+  <div class="splash-decor two"></div>
+  <div>
+    <div class="splash-logo">⚡</div>
+    <h1 class="splash-title">Quick<span>QR</span></h1>
+    <p class="splash-subtitle">Scan & Receive Instantly</p>
+  </div>
+  <div class="loader-wrap">
+    <div class="loader"></div>
+    <p class="loader-text">Loading...</p>
+  </div>
+</div>
+
+<!-- SETUP -->
+<div id="setup" class="screen app-hidden">
+<h3>Setup QuickQR</h3>
+<p>Apni details save karein</p>
+<input id="nameInput" placeholder="Your Name">
+<input id="upiInput" placeholder="UPI ID">
+<button class="btn" onclick="saveUser()">Continue</button>
+
+<div class="footer-links" aria-label="Footer links">
+  <button class="footer-link" onclick="openInfo('about')">About</button>
+  <button class="footer-link" onclick="openInfo('privacy')">Privacy</button>
+</div>
+</div>
+
+<!-- HOME -->
+<div id="home" class="screen hidden app-hidden">
+<div class="welcome-cloud">
+  <p class="welcome-text">Welcome</p>
+  <h2 class="brand-title">Quick<span>QR</span></h2>
+</div>
+<h3 id="username"></h3>
+<p>QR generate karne ke liye amount daalein</p>
+
+<input type="number" id="amount" placeholder="Enter Amount">
+
+<div class="suggest">
+<button onclick="setAmt(100)">₹100</button>
+<button onclick="setAmt(500)">₹500</button>
+<button onclick="setAmt(1000)">₹1000</button>
+</div>
+
+<button class="btn" onclick="genQR()">Generate QR</button>
+
+<div class="footer-links" aria-label="Footer links">
+  <button class="footer-link" onclick="openInfo('about')">About</button>
+  <button class="footer-link" onclick="openInfo('privacy')">Privacy</button>
+</div>
+</div>
+
+<!-- QR -->
+<div id="qr" class="screen hidden app-hidden">
+<h3 id="showName"></h3>
+<p id="showAmt"></p>
+<p id="qrTimer">Expires in 10:00</p>
+<p id="qrStatus"></p>
+<div id="qrcode"></div>
+<button class="btn" onclick="downloadQR()">Download QR</button>
+<button class="btn" onclick="goToAmountScreen()" style="background:linear-gradient(45deg,#0ea5e9,#2563eb)">Back</button>
+<div class="upi-apps">
+  <div class="upi-app" title="PhonePe">
+    <img src="images/phonepe.png" alt="PhonePe">
+  </div>
+  <div class="upi-app" title="Paytm">
+    <img src="images/paytm.webp" alt="Paytm">
+  </div>
+  <div class="upi-app" title="Google Pay">
+    <img src="images/gpay.jpg" alt="GPay">
+  </div>
+  <div class="upi-app" title="BHIM">
+    <img src="images/bhim.webp" alt="BHIM">
+  </div>
+</div>
+</div>
+
+<!-- ABOUT -->
+<div id="about" class="screen content hidden app-hidden" aria-label="About QuickQR">
+  <div class="topbar">
+    <button class="icon-btn" onclick="closeInfo()">← Back</button>
+    <h3>About</h3>
+    <span style="width:72px"></span>
+  </div>
+
+  <div class="card">
+    <h4>QuickQR</h4>
+    <p class="muted">
+      QuickQR ek simple tool hai jo aapki UPI details ko use karke instant payment QR generate karta hai.
+      Aap amount enter karke QR banaiye, scan karwaiye, aur payment receive kijiye.
+    </p>
+  </div>
+
+  <div class="card">
+    <h4>Key features</h4>
+    <ul class="bullets">
+      <li>Fast UPI QR generation</li>
+      <li>Quick amount suggestions (₹100 / ₹500 / ₹1000)</li>
+      <li>QR auto-expiry timer (10 minutes)</li>
+      <li>Download QR as image</li>
+      <li>Basic themes & background customization</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h4>Contact</h4>
+    <p class="muted">
+      Support/feedback ke liye apni contact email yahan update kar sakte ho:
+      <a href="mailto:support@example.com" style="color:#4f46e5;font-weight:600;text-decoration:none">support@example.com</a>
+    </p>
+    <p class="muted" style="margin-top:8px">
+      Version: <strong id="appVersion">1.0.0</strong>
+    </p>
+  </div>
+</div>
+
+<!-- PRIVACY -->
+<div id="privacy" class="screen content hidden app-hidden" aria-label="Privacy Policy">
+  <div class="topbar">
+    <button class="icon-btn" onclick="closeInfo()">← Back</button>
+    <h3>Privacy Policy</h3>
+    <span style="width:72px"></span>
+  </div>
+
+  <div class="card">
+    <h4>Summary</h4>
+    <p class="muted">
+      QuickQR aapka data primarily aapke device par hi store karta hai (browser local storage).
+      Hum aapki UPI ID ya name ko kisi server par upload nahi karte — kyunki is app me server hi nahi hai.
+    </p>
+    <p class="muted" style="margin-top:10px">
+      Effective date: <strong id="privacyEffective">2026-04-27</strong>
+    </p>
+  </div>
+
+  <div class="card">
+    <h4>What we store</h4>
+    <ul class="bullets">
+      <li><strong>Name</strong> (aapka display name)</li>
+      <li><strong>UPI ID</strong> (QR generate karne ke liye)</li>
+      <li><strong>Theme/mode/background</strong> preferences (optional)</li>
+    </ul>
+    <p class="muted" style="margin-top:10px">
+      Ye data aapke browser ke local storage me save hota hai, taki next time app open karne par aapko dobara setup na karna pade.
+    </p>
+  </div>
+
+  <div class="card">
+    <h4>What we don’t collect</h4>
+    <ul class="bullets">
+      <li>Payments, bank details, card details</li>
+      <li>OTP / PIN</li>
+      <li>Contacts</li>
+      <li>Location</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h4>Third-party services</h4>
+    <p class="muted">
+      QR generation ke liye hum `qrcodejs` library CDN se load karte hain.
+      Browser CDN se file fetch karta hai — is process me CDN ko basic request logs mil sakte hain (jaise IP address, user-agent).
+    </p>
+  </div>
+
+  <div class="card">
+    <h4>Data deletion</h4>
+    <p class="muted">
+      Aap local data delete karna chahte hain to browser settings me jaake site data clear kar sakte hain.
+      (Ya future me hum “Reset App” button add kar sakte hain.)
+    </p>
+  </div>
+
+  <div class="card">
+    <h4>Changes</h4>
+    <p class="muted">
+      Hum is policy ko update kar sakte hain. Updates yahin page par reflect honge.
+    </p>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div id="panel" class="panel">
+<h4>Settings</h4>
+
+<p>Theme</p>
+<button onclick="setTheme('sky')">Sky</button>
+<button onclick="setTheme('dark')">Dark</button>
+<button onclick="setTheme('premium')">Premium</button>
+
+<p>Mode</p>
+<button onclick="setMode('light')">Light</button>
+<button onclick="setMode('dark')">Dark</button>
+
+<p>Custom Background</p>
+<input type="file" onchange="uploadBg(event)">
+
+<div class="panel-divider"></div>
+
+<p>More</p>
+<button class="link-btn" onclick="openInfo('about')">ℹ️ About</button>
+<button class="link-btn" onclick="openInfo('privacy')">🔒 Privacy</button>
+</div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<script>
+let name, upi;
+let qrCountdownInterval = null;
+let qrRemainingSeconds = 0;
+let lastMainScreenId = "home";
+
+function getMainVisibleScreenId(){
+  const ids = ["setup", "home", "qr"];
+  for(const id of ids){
+    const el = document.getElementById(id);
+    if(el && !el.classList.contains("hidden")) return id;
+  }
+  return "home";
+}
+
+function openInfo(id){
+  lastMainScreenId = getMainVisibleScreenId();
+  document.getElementById("panel").classList.remove("show");
+  document.getElementById("setup").classList.add("hidden");
+  document.getElementById("home").classList.add("hidden");
+  document.getElementById("qr").classList.add("hidden");
+  document.getElementById("about").classList.add("hidden");
+  document.getElementById("privacy").classList.add("hidden");
+  document.getElementById(id).classList.remove("hidden");
+}
+
+function closeInfo(){
+  document.getElementById("about").classList.add("hidden");
+  document.getElementById("privacy").classList.add("hidden");
+  const backTo = document.getElementById(lastMainScreenId) ? lastMainScreenId : "home";
+  document.getElementById(backTo).classList.remove("hidden");
+}
+
+// SAVE USER
+function saveUser(){
+  name = document.getElementById("nameInput").value;
+  upi = document.getElementById("upiInput").value;
+
+  if(!name || !upi){
+    alert("Fill all details");
+    return;
+  }
+
+  localStorage.setItem("name", name);
+  localStorage.setItem("upi", upi);
+
+  loadUser();
+}
+
+// LOAD USER
+function loadUser(){
+  name = localStorage.getItem("name");
+  upi = localStorage.getItem("upi");
+
+  document.getElementById("setup").classList.remove("app-hidden");
+  document.getElementById("home").classList.remove("app-hidden");
+  document.getElementById("qr").classList.remove("app-hidden");
+  document.getElementById("about").classList.remove("app-hidden");
+  document.getElementById("privacy").classList.remove("app-hidden");
+  document.getElementById("settingsBtn").classList.remove("app-hidden");
+
+  if(name && upi){
+    document.getElementById("setup").classList.add("hidden");
+    document.getElementById("home").classList.remove("hidden");
+    document.getElementById("username").innerText = name;
+  }
+}
+function startApp(){
+  setTimeout(()=>{
+    document.getElementById("splash").classList.add("hidden");
+    loadUser();
+  }, 2200);
+}
+startApp();
+
+// AMOUNT
+function setAmt(v){
+  document.getElementById("amount").value = v;
+}
+
+function formatTime(totalSeconds){
+  let mins = Math.floor(totalSeconds / 60);
+  let secs = totalSeconds % 60;
+  return String(mins).padStart(2, "0") + ":" + String(secs).padStart(2, "0");
+}
+
+function updateTimerUI(){
+  document.getElementById("qrTimer").innerText = "Expires in " + formatTime(qrRemainingSeconds);
+}
+
+function stopQrTimer(){
+  if(qrCountdownInterval){
+    clearInterval(qrCountdownInterval);
+    qrCountdownInterval = null;
+  }
+}
+
+function clearQrData(){
+  stopQrTimer();
+  qrRemainingSeconds = 0;
+  document.getElementById("qrcode").innerHTML = "";
+  document.getElementById("qrTimer").innerText = "Expires in 10:00";
+}
+
+function goToAmountScreen(){
+  clearQrData();
+  document.getElementById("qrStatus").innerText = "";
+  document.getElementById("qr").classList.add("hidden");
+  document.getElementById("home").classList.remove("hidden");
+}
+
+function startQrTimer(){
+  stopQrTimer();
+  qrRemainingSeconds = 600;
+  document.getElementById("qrStatus").innerText = "";
+  updateTimerUI();
+
+  qrCountdownInterval = setInterval(()=>{
+    qrRemainingSeconds -= 1;
+
+    if(qrRemainingSeconds <= 0){
+      document.getElementById("qrStatus").innerText = "QR Expired";
+      clearQrData();
+      setTimeout(()=>{
+        document.getElementById("qrStatus").innerText = "";
+        document.getElementById("qr").classList.add("hidden");
+        document.getElementById("home").classList.remove("hidden");
+      }, 1000);
+      return;
+    }
+
+    updateTimerUI();
+  }, 1000);
+}
+
+// GENERATE QR
+function genQR(){
+  let amt = document.getElementById("amount").value;
+
+  if(!amt){
+    alert("Enter amount");
+    return;
+  }
+
+  document.getElementById("home").classList.add("hidden");
+  document.getElementById("qr").classList.remove("hidden");
+
+  document.getElementById("showName").innerText = name;
+  document.getElementById("showAmt").innerText = "₹ " + amt;
+
+  let link = `upi://pay?pa=${upi}&pn=${name}&am=${amt}&cu=INR`;
+
+  document.getElementById("qrcode").innerHTML = "";
+  new QRCode(document.getElementById("qrcode"), link);
+  startQrTimer();
+}
+
+// DOWNLOAD QR
+function downloadQR(){
+  let img = document.querySelector("#qrcode img");
+  if(!img){
+    alert("Generate QR first");
+    return;
+  }
+
+  let a = document.createElement("a");
+  a.href = img.src;
+  a.download = "quickqr.png";
+  a.click();
+}
+
+// SETTINGS
+function toggleSettings(){
+  document.getElementById("panel").classList.toggle("show");
+}
+
+// THEMES
+function setTheme(t){
+  let phone = document.getElementById("phone");
+
+  if(t==="dark") phone.style.background="#111";
+  if(t==="sky") phone.style.background="linear-gradient(#cbe8ff,#a8d0e6)";
+  if(t==="premium") phone.style.background="linear-gradient(#667eea,#764ba2)";
+}
+
+// MODE
+function setMode(m){
+  document.body.style.background = (m==="dark") ? "#000" : "#f5f5f5";
+}
+
+// CUSTOM BG
+function uploadBg(e){
+  let file = e.target.files[0];
+  if(!file) return;
+
+  let url = URL.createObjectURL(file);
+  document.getElementById("phone").style.background = `url(${url}) center/cover`;
+}
+</script>
+
+</body>
+</html>
