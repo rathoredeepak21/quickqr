@@ -193,6 +193,11 @@ input::placeholder{color:#6b7280}
   font-weight:600;
   cursor:pointer;
 }
+#panel .danger-btn{
+  border-color:rgba(220,38,38,.25);
+  color:#b91c1c;
+  background:#fff5f5;
+}
 #panel .link-btn{
   display:inline-flex;
   align-items:center;
@@ -471,7 +476,6 @@ input::placeholder{color:#6b7280}
   </div>
 </div>
 
-
 <!-- SETUP -->
 <div id="setup" class="screen app-hidden">
 <h3>Setup QuickQR</h3>
@@ -535,18 +539,7 @@ input::placeholder{color:#6b7280}
   </div>
 </div>
 </div>
-  <div style="margin-top:20px;text-align:center;max-width:100%;">
-  <script>
-    atOptions = {
-      'key' : '613d5d4742c487eb0c34a49f6f1b9bc9',
-      'format' : 'iframe',
-      'height' : 60,
-      'width' : 320, // mobile friendly
-      'params' : {}
-    };
-  </script>
-  <script src="https://www.highperformanceformat.com/613d5d4742c487eb0c34a49f6f1b9bc9/invoke.js"></script>
-</div>
+
 
 <!-- ABOUT -->
 <div id="about" class="screen content hidden app-hidden" aria-label="About QuickQR">
@@ -639,8 +632,8 @@ input::placeholder{color:#6b7280}
   <div class="card">
     <h4>Data deletion</h4>
     <p class="muted">
-      Aap local data delete karna chahte hain to browser settings me jaake site data clear kar sakte hain.
-      (Ya future me hum “Reset App” button add kar sakte hain.)
+      Aap local data delete karna chahte hain to browser settings me site data clear kar sakte hain,
+      ya phir Settings me available <strong>Reset App</strong> button ka use kar sakte hain.
     </p>
   </div>
 
@@ -673,6 +666,7 @@ input::placeholder{color:#6b7280}
 <p>More</p>
 <button class="link-btn" onclick="openInfo('about')">ℹ️ About</button>
 <button class="link-btn" onclick="openInfo('privacy')">🔒 Privacy</button>
+<button class="danger-btn" onclick="resetApp()">Reset App</button>
 </div>
 
 </div>
@@ -853,6 +847,39 @@ function downloadQR(){
 // SETTINGS
 function toggleSettings(){
   document.getElementById("panel").classList.toggle("show");
+}
+
+function resetApp(){
+  const ok = confirm("Reset App? Isse saved name/UPI aur generated QR data clear ho jayega.");
+  if(!ok) return;
+
+  stopQrTimer();
+  clearQrData();
+  localStorage.removeItem("name");
+  localStorage.removeItem("upi");
+
+  name = "";
+  upi = "";
+  document.getElementById("nameInput").value = "";
+  document.getElementById("upiInput").value = "";
+  document.getElementById("amount").value = "";
+  document.getElementById("username").innerText = "";
+  document.getElementById("showName").innerText = "";
+  document.getElementById("showAmt").innerText = "";
+  document.getElementById("qrStatus").innerText = "";
+  document.getElementById("panel").classList.remove("show");
+
+  document.getElementById("about").classList.add("hidden");
+  document.getElementById("privacy").classList.add("hidden");
+  document.getElementById("home").classList.add("hidden");
+  document.getElementById("qr").classList.add("hidden");
+  document.getElementById("setup").classList.remove("hidden");
+
+  // Reset visual tweaks back to default app look.
+  document.getElementById("phone").style.background = "linear-gradient(160deg,#cbe8ff 0%,#a8d0e6 55%,#93c5e6 100%)";
+  document.body.style.background = "radial-gradient(circle at top,#2a2f4f 0%,#111827 45%,#090d17 100%)";
+
+  alert("App reset complete.");
 }
 
 // THEMES
